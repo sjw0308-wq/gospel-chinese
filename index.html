@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>중국어 복음 카드</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="복음카드">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  background: #0d1117;
+  font-family: 'Noto Sans KR', 'Noto Sans SC', sans-serif;
+  color: #e6edf3;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 16px 60px;
+}
+.header {
+  width: 100%; max-width: 600px;
+  padding: 22px 0 14px;
+  border-bottom: 1px solid #21262d;
+  margin-bottom: 22px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-left .sub  { font-size: 10px; color: #484f58; letter-spacing: 3px; margin-bottom: 4px; }
+.header-left .title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg,#79c0ff,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.back-btn {
+  background: #21262d; border: 1px solid #30363d;
+  color: #8b949e; border-radius: 8px;
+  padding: 6px 14px; font-size: 12px; cursor: pointer;
+  display: none; font-family: inherit;
+}
+.box {
+  width: 100%; max-width: 600px;
+  background: #161b22; border: 1px solid #21262d;
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+}
+.box-label { font-size: 10px; color: #484f58; letter-spacing: 2px; margin-bottom: 10px; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 6px 14px; border-radius: 8px; font-size: 12px;
+  cursor: pointer; border: 1px solid #30363d;
+  background: transparent; color: #6b7280; font-family: inherit;
+}
+.filter-btn.on-all  { border-color:#8b949e; background:rgba(139,148,158,0.12); color:#8b949e; }
+.filter-btn.on-word { border-color:#a78bfa; background:rgba(167,139,250,0.12); color:#a78bfa; }
+.filter-btn.on-sent { border-color:#fbbf24; background:rgba(251,191,36,0.12);  color:#fbbf24; }
+
+/* 유닛 목록 */
+.unit-list { width:100%; max-width:600px; display:flex; flex-direction:column; gap:8px; }
+.unit-item {
+  display:flex; align-items:center; gap:14px;
+  padding:13px 16px;
+  background:#161b22; border:1px solid #21262d; border-radius:12px;
+  cursor:pointer; transition:border-color 0.15s;
+}
+.unit-item:hover { border-color:#388bfd; }
+.unit-num {
+  width:36px; height:36px; border-radius:9px;
+  background:#21262d; display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:#8b949e; flex-shrink:0;
+}
+.unit-info { flex:1; }
+.unit-title { font-size:14px; font-weight:600; color:#e6edf3; margin-bottom:3px; }
+.unit-sub   { font-size:11px; color:#6b7280; }
+.unit-counts { display:flex; flex-direction:column; gap:2px; align-items:flex-end; flex-shrink:0; }
+.unit-counts span { font-size:10px; }
+
+/* 카드 목록 */
+.card-list { width:100%; max-width:600px; display:flex; flex-direction:column; gap:6px; }
+.list-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px;
+  background:#161b22; border:1px solid #21262d; border-radius:10px;
+}
+.type-pill { font-size:10px; letter-spacing:1px; font-weight:700; border-radius:99px; padding:3px 10px; flex-shrink:0; }
+.pill-word { color:#a78bfa; background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.3); }
+.pill-sent { color:#fbbf24; background:rgba(251,191,36,0.12);  border:1px solid rgba(251,191,36,0.3); }
+.list-hanzi { font-size:13px; color:#c9d1d9; flex:1; line-height:1.5; }
+.list-speak { background:none; border:none; cursor:pointer; font-size:14px; color:#388bfd; padding:0 4px; flex-shrink:0; }
+.list-star  { background:none; border:none; cursor:pointer; font-size:15px; color:#30363d; padding:0; flex-shrink:0; }
+.list-star.on { color:#fbbf24; }
+
+/* 학습 화면 */
+#study-screen { width:100%; max-width:520px; display:none; }
+.progress-row { display:flex; justify-content:space-between; font-size:11px; color:#6b7280; margin-bottom:6px; }
+.progress-bar { height:3px; background:#21262d; border-radius:99px; margin-bottom:16px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#388bfd,#a78bfa); transition:width 0.35s; }
+.badge-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.card-star { background:none; border:none; cursor:pointer; font-size:17px; color:#30363d; padding:0; }
+.card-star.on { color:#fbbf24; }
+.study-card {
+  background:#0d1117; border:1.5px solid #21262d; border-radius:20px;
+  padding:32px 24px; min-height:200px; cursor:pointer; transition:all 0.2s;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:16px; margin-bottom:16px; user-select:none;
+}
+.study-card.s1 { background:#161b22; border-color:#388bfd; }
+.study-card.s2 { background:#161b22; border-color:#a78bfa; }
+.study-card.ok { border-color:#3fb950; }
+.study-card.ng { border-color:#f85149; }
+.card-section { width:100%; text-align:center; }
+.sec-label { font-size:10px; color:#484f58; letter-spacing:3px; margin-bottom:10px; }
+.card-divider { width:100%; height:1px; background:#21262d; }
+.hanzi-text  { color:#e6edf3; line-height:1.7; }
+.pinyin-text { color:#79c0ff; line-height:1.7; }
+.korean-text { color:#c9d1d9; line-height:1.8; }
+.speak-card-btn {
+  background:rgba(56,139,253,0.08); border:1px solid #30363d;
+  border-radius:99px; padding:6px 18px; color:#484f58; font-size:13px;
+  cursor:pointer; transition:all 0.2s; font-family:inherit;
+}
+.speak-card-btn.playing { background:rgba(56,139,253,0.2); border-color:#388bfd; color:#79c0ff; }
+.tap-hint { font-size:11px; color:#30363d; }
+.dots { display:flex; justify-content:center; gap:8px; margin-bottom:14px; }
+.dot { height:8px; border-radius:99px; background:#21262d; transition:all 0.25s; }
+.result-btns { display:flex; gap:10px; }
+.wrong-btn, .ok-btn {
+  flex:1; padding:14px; border-radius:12px; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+}
+.wrong-btn { background:rgba(248,81,73,0.1); border:1px solid rgba(248,81,73,0.3); color:#ff7b72; }
+.ok-btn    { background:rgba(63,185,80,0.1);  border:1px solid rgba(63,185,80,0.3);  color:#56d364; }
+.result-fb { text-align:center; padding:13px; border-radius:12px; font-size:14px; font-weight:600; display:none; }
+.result-fb.ok { background:rgba(63,185,80,0.1); border:1px solid rgba(63,185,80,0.25); color:#56d364; }
+.result-fb.ng { background:rgba(248,81,73,0.1); border:1px solid rgba(248,81,73,0.25); color:#ff7b72; }
+
+/* 완료 */
+#done-screen {
+  width:100%; max-width:420px; text-align:center;
+  padding:40px 24px; background:#161b22;
+  border-radius:18px; border:1px solid #21262d; display:none;
+}
+.done-emoji { font-size:44px; margin-bottom:14px; }
+.done-title { font-size:18px; font-weight:700; margin-bottom:6px; }
+.done-sub   { font-size:12px; color:#6b7280; margin-bottom:28px; }
+.score-row  { display:flex; justify-content:center; gap:36px; margin-bottom:32px; }
+.score-num  { font-size:34px; font-weight:700; }
+.score-lbl  { font-size:11px; color:#484f58; }
+.done-btns  { display:flex; flex-direction:column; gap:10px; }
+.done-btn { padding:13px; border-radius:10px; font-size:14px; cursor:pointer; font-family:inherit; }
+.btn-wrong { background:rgba(248,81,73,0.1); border:1px solid rgba(248,81,73,0.25); color:#ff7b72; font-weight:600; }
+.btn-star  { background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25); color:#fbbf24; font-weight:600; }
+.btn-retry { background:rgba(56,139,253,0.1); border:1px solid rgba(56,139,253,0.25); color:#79c0ff; }
+.btn-home  { background:#21262d; border:1px solid #30363d; color:#8b949e; }
+
+/* 시작버튼들 */
+.start-btn {
+  width:100%; max-width:600px; padding:16px; border-radius:12px;
+  background:linear-gradient(135deg,rgba(56,139,253,0.2),rgba(167,139,250,0.15));
+  border:1px solid rgba(56,139,253,0.4); color:#79c0ff;
+  font-size:15px; font-weight:700; cursor:pointer; margin-bottom:10px; font-family:inherit;
+}
+.star-start-btn {
+  width:100%; max-width:600px; padding:13px; border-radius:12px;
+  background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25);
+  color:#fbbf24; font-size:13px; font-weight:600; cursor:pointer; margin-bottom:8px;
+  font-family:inherit; display:none;
+}
+.section-label { width:100%; max-width:600px; font-size:10px; color:#484f58; letter-spacing:2px; margin-bottom:8px; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.fade-up { animation:fadeUp 0.2s ease; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="sub">GOSPEL CHINESE · 중국어로 복음 전하기</div>
+    <div class="title">福音学习卡片</div>
+  </div>
+  <button class="back-btn" id="back-btn" onclick="goHome()">← 홈</button>
+</div>
+
+<!-- 홈 -->
+<div id="home-screen">
+  <div class="box">
+    <div class="box-label">학습 순서</div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;">
+      <span style="color:#e6edf3;font-weight:600;">① 한자</span>
+      <span style="color:#30363d;">→</span>
+      <span style="color:#79c0ff;font-weight:600;">② 병음</span>
+      <span style="color:#30363d;">→</span>
+      <span style="color:#56d364;font-weight:600;">③ 한국어</span>
+      <span style="color:#30363d;">→</span>
+      <span style="color:#8b949e;">알았다 / 몰랐다 &nbsp;·&nbsp; 🔊 발음 듣기</span>
+    </div>
+  </div>
+  <div class="box">
+    <div class="box-label">카드 종류</div>
+    <div class="filter-row">
+      <button class="filter-btn on-all"  onclick="setFilter('all',this)">전체 (<span id="cnt-all">0</span>)</button>
+      <button class="filter-btn"         onclick="setFilter('word',this)">단어 (<span id="cnt-word">0</span>)</button>
+      <button class="filter-btn"         onclick="setFilter('sentence',this)">문장 (<span id="cnt-sent">0</span>)</button>
+    </div>
+  </div>
+  <button class="star-start-btn" id="star-start-btn" onclick="startStudy('star')">⭐ 즐겨찾기 학습 (<span id="star-cnt">0</span>장)</button>
+  <button class="start-btn" id="wrong-home-btn" onclick="startStudy('wrong')" style="display:none;background:linear-gradient(135deg,rgba(248,81,73,0.2),rgba(239,68,68,0.1));border-color:rgba(248,81,73,0.4);color:#ff7b72;">📚 오답 노트 복습 (<span id="wrong-home-cnt">0</span>장)</button>
+  <button class="start-btn" onclick="startStudy('all-filter')">⚡ 전체 랜덤 학습 (<span id="start-cnt">0</span>장)</button>
+  <div class="section-label" style="margin-top:8px;">유닛별 학습</div>
+  <div class="unit-list" id="unit-list"></div>
+</div>
+
+<!-- 유닛 상세 -->
+<div id="unit-screen" style="display:none; width:100%; max-width:600px;">
+  <div class="box" style="margin-bottom:8px;">
+    <div class="box-label" id="unit-detail-label"></div>
+    <div style="font-size:16px;font-weight:700;color:#e6edf3;" id="unit-detail-title"></div>
+    <div style="font-size:12px;color:#6b7280;margin-top:3px;" id="unit-detail-sub"></div>
+  </div>
+  <button class="star-start-btn" id="unit-star-btn" onclick="startStudy('unit-star')">⭐ 즐겨찾기 학습 (<span id="unit-star-cnt">0</span>장)</button>
+  <button class="start-btn" id="unit-start-btn" onclick="startStudy('unit')">▶ 이 유닛 학습 (<span id="unit-cnt">0</span>장)</button>
+  <div class="section-label">카드 목록</div>
+  <div class="card-list" id="unit-card-list"></div>
+</div>
+
+<!-- 학습 -->
+<div id="study-screen">
+  <div class="progress-row">
+    <span id="prog-label">1/10</span>
+    <span><span id="ok-cnt" style="color:#3fb950;">✓0</span> <span id="ng-cnt" style="color:#f85149;">✗0</span></span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="badge-row">
+    <span class="type-pill" id="card-badge"></span>
+    <button class="card-star" id="card-star" onclick="toggleStarCur()">★</button>
+    <span style="font-size:11px;color:#484f58;" id="card-unit-label"></span>
+  </div>
+  <div class="study-card" id="study-card" onclick="nextStep()">
+    <div class="card-section">
+      <div class="sec-label">한 자</div>
+      <div class="hanzi-text" id="c-hanzi"></div>
+    </div>
+    <button class="speak-card-btn" id="speak-btn" onclick="speakCur(event)">🔊 듣기</button>
+    <div class="card-divider" id="div1" style="display:none"></div>
+    <div class="card-section fade-up" id="sec-py" style="display:none">
+      <div class="sec-label">병 음</div>
+      <div class="pinyin-text" id="c-py"></div>
+    </div>
+    <div class="card-divider" id="div2" style="display:none"></div>
+    <div class="card-section fade-up" id="sec-kr" style="display:none">
+      <div class="sec-label">한국어</div>
+      <div class="korean-text" id="c-kr"></div>
+    </div>
+    <div class="tap-hint" id="tap-hint">탭 → 병음 확인</div>
+  </div>
+  <div class="dots" id="dots">
+    <div class="dot" id="d0" style="width:24px;background:#388bfd;"></div>
+    <div class="dot" id="d1" style="width:8px;"></div>
+    <div class="dot" id="d2" style="width:8px;"></div>
+  </div>
+  <div class="result-btns" id="result-btns" style="display:none;">
+    <button class="wrong-btn" onclick="handleResult(false)">✗ 몰랐다</button>
+    <button class="ok-btn"    onclick="handleResult(true)">✓ 알았다</button>
+  </div>
+  <div class="result-fb" id="result-fb"></div>
+</div>
+
+<!-- 완료 -->
+<div id="done-screen">
+  <div class="done-emoji" id="done-emoji">🎉</div>
+  <div class="done-title" id="done-title">학습 완료!</div>
+  <div class="done-sub"   id="done-sub"></div>
+  <div class="score-row">
+    <div><div class="score-num" style="color:#3fb950;" id="final-ok">0</div><div class="score-lbl">정답</div></div>
+    <div><div class="score-num" style="color:#f85149;" id="final-ng">0</div><div class="score-lbl">오답</div></div>
+  </div>
+  <div class="done-btns">
+    <button class="done-btn btn-wrong" id="d-wrong-btn" onclick="startStudy('wrong')" style="display:none;">🔁 틀린 카드 복습 (<span id="wrong-cnt2">0</span>장)</button>
+    <button class="done-btn btn-star"  id="d-star-btn"  onclick="startStudy('star')"  style="display:none;">⭐ 즐겨찾기 복습 (<span id="star-cnt2">0</span>장)</button>
+    <button class="done-btn btn-retry" onclick="startStudy('retry')">🔄 처음부터 다시</button>
+    <button class="done-btn btn-home"  onclick="goHome()">← 홈으로</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// 데이터 (Unit 01~19 교재 그대로)
+// ══════════════════════════════════════════════════════════
+const UNITS = [
+  {
+    id:1, title:"天堂还是地狱？", korean:"천국입니까? 지옥입니까?",
+    cards:[
+      {t:"w", h:"天堂",   p:"tiāntáng",   k:"천국"},
+      {t:"w", h:"地狱",   p:"dìyù",       k:"지옥"},
+      {t:"w", h:"生活",   p:"shēnghuó",   k:"살다, 생활하다"},
+      {t:"w", h:"幸福",   p:"xìngfú",     k:"행복하다"},
+      {t:"w", h:"所以",   p:"suǒyǐ",      k:"그래서"},
+      {t:"w", h:"努力",   p:"nǔlì",       k:"노력"},
+      {t:"w", h:"可是",   p:"kěshì",      k:"그러나"},
+      {t:"w", h:"不管",   p:"bùguǎn",     k:"~을 막론하고"},
+      {t:"w", h:"或者",   p:"huòzhě",     k:"혹은, 또는"},
+      {t:"w", h:"不幸",   p:"bùxìng",     k:"불행하다"},
+      {t:"w", h:"迟早",   p:"chízǎo",     k:"조만간"},
+      {t:"w", h:"面对",   p:"miànduì",    k:"~에 직면하다"},
+      {t:"w", h:"死亡",   p:"sǐwáng",     k:"죽음, 사망하다"},
+      {t:"w", h:"然而",   p:"rán'ér",     k:"하지만, 그런데"},
+      {t:"w", h:"不仅仅", p:"bù jǐnjǐn", k:"단지 ~만이 아니다"},
+      {t:"w", h:"结束",   p:"jiéshù",     k:"끝나다"},
+      {t:"w", h:"希望",   p:"xīwàng",     k:"원하다, 바라다"},
+      {t:"w", h:"每个人", p:"měi gè rén", k:"모든 사람, 누구나"},
+      {t:"w", h:"一切",   p:"yīqiè",      k:"모든, 온갖"},
+      {t:"s", h:"每个人都希望生活幸福。", p:"Měi gè rén dōu xīwàng shēnghuó xìngfú.", k:"모든 사람들은 행복하게 살기를 바랍니다."},
+      {t:"s", h:"所以我们尽了一切的努力。", p:"Suǒyǐ wǒmen jìn le yīqiè de nǔlì.", k:"그래서 우리는 모든 노력을 다합니다."},
+      {t:"s", h:"可是，不管生活得幸福或者不幸，我们迟早都要面对死亡。", p:"Kěshì, bùguǎn shēnghuó de xìngfú huòzhě bùxìng, wǒmen chízǎo dōu yào miànduì sǐwáng.", k:"그러나 행복하게 살든 혹은 불행하게 살든, 우리는 조만간 모두 죽음에 직면하게 됩니다."},
+      {t:"s", h:"我们迟早都要面对死亡。", p:"Wǒmen chízǎo dōu yào miànduì sǐwáng.", k:"우리는 조만간 모두 죽음에 직면하게 됩니다."},
+      {t:"s", h:"然而，死亡不仅仅是结束。", p:"Rán'ér, sǐwáng bù jǐnjǐn shì jiéshù.", k:"그런데 죽는다고 결코 끝나는 것이 아닙니다."},
+    ]
+  },
+  {
+    id:2, title:"天堂还是地狱？", korean:"천국입니까? 지옥입니까? (2)",
+    cards:[
+      {t:"w", h:"以后",   p:"yǐhòu",      k:"이후에"},
+      {t:"w", h:"受审判", p:"shòu shěnpàn",k:"심판을 받다"},
+      {t:"w", h:"上帝",   p:"shàngdì",    k:"하나님"},
+      {t:"w", h:"进入",   p:"jìnrù",      k:"들어가다"},
+      {t:"w", h:"永远",   p:"yǒngyuǎn",   k:"영원히"},
+      {t:"w", h:"乐园",   p:"lèyuán",     k:"낙원, 파라다이스"},
+      {t:"w", h:"悲伤",   p:"bēishāng",   k:"슬픔"},
+      {t:"w", h:"痛苦",   p:"tòngkǔ",     k:"고통"},
+      {t:"w", h:"美丽",   p:"měilì",      k:"아름답다"},
+      {t:"w", h:"可怕",   p:"kěpà",       k:"무섭다"},
+      {t:"w", h:"火湖",   p:"huǒhú",      k:"불못"},
+      {t:"s", h:"当我们死亡以后，我们会受到上帝的审判。", p:"Dāng wǒmen sǐwáng yǐhòu, wǒmen huì shòudào shàngdì de shěnpàn.", k:"우리가 죽은 후에는 하나님의 심판을 받게 됩니다."},
+      {t:"s", h:"或上天堂，或下地狱。", p:"Huò shàng tiāntáng, huò xià dìyù.", k:"천국으로 가거나, 지옥으로 가게 됩니다."},
+      {t:"s", h:"如果我们进入天堂，我们将永远幸福地生活。", p:"Rúguǒ wǒmen jìnrù tiāntáng, wǒmen jiāng yǒngyuǎn xìngfú de shēnghuó.", k:"만약 우리가 천국에 들어가면 영원히 행복하게 살 것입니다."},
+      {t:"s", h:"在那美丽的乐园里，没有悲伤，也没有痛苦。", p:"Zài nà měilì de lèyuán lǐ, méiyǒu bēishāng, yě méiyǒu tòngkǔ.", k:"그 아름다운 낙원에서는 슬픔도 없고 고통도 없습니다."},
+      {t:"s", h:"然而，如果我们下了地狱，我们将永远痛苦地生活在可怕的火湖中。", p:"Rán'ér, rúguǒ wǒmen xià le dìyù, wǒmen jiāng yǒngyuǎn tòngkǔ de shēnghuó zài kěpà de huǒhú zhōng.", k:"하지만 우리가 지옥에 가면, 무시무시한 불구덩이 속에서 영원히 고통을 받게 됩니다."},
+    ]
+  },
+  {
+    id:3, title:"天堂还是地狱？", korean:"천국입니까? 지옥입니까? (3)",
+    cards:[
+      {t:"w", h:"哪儿",   p:"nǎr",        k:"어디"},
+      {t:"w", h:"只",     p:"zhǐ",        k:"단지, 다만"},
+      {t:"w", h:"需要",   p:"xūyào",      k:"필요하다"},
+      {t:"w", h:"小册子", p:"xiǎocèzi",   k:"소책자"},
+      {t:"w", h:"发现",   p:"fāxiàn",     k:"발견하다"},
+      {t:"w", h:"惊奇",   p:"jīngqí",     k:"놀랍다, 신기하다"},
+      {t:"w", h:"真相",   p:"zhēnxiàng",  k:"진실, 진리"},
+      {t:"w", h:"改变",   p:"gǎibiàn",    k:"바꾸다, 변화시키다"},
+      {t:"s", h:"你觉得你会去哪儿呢？", p:"Nǐ juéde nǐ huì qù nǎr ne?", k:"당신은 어디로 가게 될까요?"},
+      {t:"s", h:"天堂还是地狱？", p:"Tiāntáng háishi dìyù?", k:"천국입니까 아니면 지옥입니까?"},
+      {t:"s", h:"只需要花几分钟，阅读这本小册子。", p:"Zhǐ xūyào huā jǐ fēnzhōng, yuèdú zhè běn xiǎocèzi.", k:"단 몇 분을 투자해서 이 소책자를 읽어보세요."},
+      {t:"s", h:"你就会发现令人惊奇的真相。", p:"Nǐ jiù huì fāxiàn lìngrén jīngqí de zhēnxiàng.", k:"당신은 놀라운 진리를 발견할 것입니다."},
+      {t:"s", h:"这个真相将改变你的生活。", p:"Zhège zhēnxiàng jiāng gǎibiàn nǐ de shēnghuó.", k:"이러한 진리는 당신의 삶을 변화시킬 것입니다."},
+    ]
+  },
+  {
+    id:4, title:"谁创造了这个世界？", korean:"이 세상은 누가 만들었을까요? (1)",
+    cards:[
+      {t:"w", h:"谁",     p:"shéi",       k:"누가"},
+      {t:"w", h:"这个",   p:"zhège",      k:"이, 이것"},
+      {t:"w", h:"起初",   p:"qǐchū",      k:"태초에, 처음에"},
+      {t:"w", h:"创造",   p:"chuàngzào",  k:"만들다, 창조하다"},
+      {t:"w", h:"世界",   p:"shìjiè",     k:"세상, 세계"},
+      {t:"w", h:"天下",   p:"tiānxià",    k:"온 세상"},
+      {t:"w", h:"万物",   p:"wànwù",      k:"만물"},
+      {t:"w", h:"白天",   p:"báitiān",    k:"낮"},
+      {t:"w", h:"黑天",   p:"hēitiān",    k:"밤"},
+      {t:"w", h:"天",     p:"tiān",       k:"하늘"},
+      {t:"w", h:"地",     p:"dì",         k:"땅"},
+      {t:"w", h:"海",     p:"hǎi",        k:"바다"},
+      {t:"s", h:"起初，上帝创造了这个世界。", p:"Qǐchū, shàngdì chuàngzào le zhège shìjiè.", k:"태초에 하나님이 이 세상을 만드셨습니다."},
+      {t:"s", h:"上帝创造了天下万物。", p:"Shàngdì chuàngzào le tiānxià wànwù.", k:"하나님은 온 세상의 만물을 만드셨습니다."},
+      {t:"s", h:"上帝创造了白天和黑天。", p:"Shàngdì chuàngzào le báitiān hé hēitiān.", k:"하나님은 낮과 밤을 만드셨습니다."},
+      {t:"s", h:"也创造了天和地，还有海。", p:"Yě chuàngzào le tiān hé dì, háiyǒu hǎi.", k:"또 하늘과 땅을, 또한 바다를 만드셨습니다."},
+    ]
+  },
+  {
+    id:5, title:"谁创造了这个世界？", korean:"이 세상은 누가 만들었을까요? (2)",
+    cards:[
+      {t:"w", h:"接下来", p:"jiēxiàlái",  k:"이어서, 다음으로"},
+      {t:"w", h:"植物",   p:"zhíwù",      k:"식물"},
+      {t:"w", h:"太阳",   p:"tàiyáng",    k:"해, 태양"},
+      {t:"w", h:"月亮",   p:"yuèliang",   k:"달"},
+      {t:"w", h:"还有",   p:"háiyǒu",     k:"그리고, 또한"},
+      {t:"w", h:"满天",   p:"mǎntiān",    k:"온 하늘"},
+      {t:"w", h:"星辰",   p:"xīngchén",   k:"별"},
+      {t:"w", h:"而且",   p:"érqiě",      k:"뿐만 아니라"},
+      {t:"w", h:"鱼类",   p:"yúlèi",      k:"물고기, 어류"},
+      {t:"w", h:"天空",   p:"tiānkōng",   k:"하늘, 공중"},
+      {t:"w", h:"鸟儿",   p:"niǎor",      k:"새"},
+      {t:"w", h:"动物",   p:"dòngwù",     k:"동물"},
+      {t:"s", h:"接下来，上帝在这个地上创造了各种植物。", p:"Jiēxiàlái, shàngdì zài zhège dìshang chuàngzào le gèzhǒng zhíwù.", k:"이어서 하나님은 이 땅 위에 각종 식물들을 만드셨습니다."},
+      {t:"s", h:"在天空中，也创造了太阳和月亮，还有满天星辰。", p:"Zài tiānkōng zhōng, yě chuàngzào le tàiyáng hé yuèliang, háiyǒu mǎntiān xīngchén.", k:"하늘에는 해와 달, 또한 하늘 가득한 별들을 만드셨습니다."},
+      {t:"s", h:"而且，他创造了海里的鱼类、天空的鸟儿，还有地上的动物。", p:"Érqiě, tā chuàngzào le hǎilǐ de yúlèi, tiānkōng de niǎor, háiyǒu dìshang de dòngwù.", k:"뿐만 아니라 바다의 물고기들과 하늘의 새들, 그리고 땅의 동물들을 만드셨습니다."},
+    ]
+  },
+  {
+    id:6, title:"上帝为什么创造了人类？", korean:"하나님은 왜 인간을 만드셨을까요?",
+    cards:[
+      {t:"w", h:"为什么", p:"wèishénme",  k:"왜"},
+      {t:"w", h:"人类",   p:"rénlèi",     k:"인간, 인류"},
+      {t:"w", h:"男人",   p:"nánrén",     k:"남자"},
+      {t:"w", h:"女人",   p:"nǚrén",      k:"여자"},
+      {t:"w", h:"爱",     p:"ài",         k:"사랑하다"},
+      {t:"w", h:"因为",   p:"yīnwèi",     k:"왜냐하면"},
+      {t:"w", h:"为了",   p:"wèile",      k:"~를 위해서"},
+      {t:"w", h:"得到",   p:"dédào",      k:"얻다, 받다"},
+      {t:"w", h:"更大",   p:"gèngdà",     k:"더 큰"},
+      {t:"w", h:"福气",   p:"fúqì",       k:"복, 행운"},
+      {t:"s", h:"上帝创造了人，他创造了男人和女人。", p:"Shàngdì chuàngzào le rén, tā chuàngzào le nánrén hé nǚrén.", k:"하나님은 인간을 만드셨습니다. 남자와 여자로 만드셨습니다."},
+      {t:"s", h:"因为上帝爱他们，也为了得到他们的爱，所以才创造了他们。", p:"Yīnwèi shàngdì ài tāmen, yě wèile dédào tāmen de ài, suǒyǐ cái chuàngzào le tāmen.", k:"하나님은 그들을 사랑하고 그들의 사랑을 받기 위해서 그들을 만드셨습니다."},
+      {t:"s", h:"上帝太爱他们了，也把更大的福气给他们了。", p:"Shàngdì tài ài tāmen le, yě bǎ gèngdà de fúqì gěi tāmen le.", k:"하나님은 그들을 매우 사랑하셔서 더 큰 복도 주셨습니다."},
+    ]
+  },
+  {
+    id:7, title:"他们做错了什么？", korean:"그들은 무슨 죄를 지었을까요? (1)",
+    cards:[
+      {t:"w", h:"做错",   p:"zuòcuò",     k:"잘못하다"},
+      {t:"w", h:"允许",   p:"yǔnxǔ",      k:"허락하다"},
+      {t:"w", h:"所有",   p:"suǒyǒu",     k:"모든"},
+      {t:"w", h:"不要",   p:"búyào",      k:"~하지 마라"},
+      {t:"w", h:"善与恶", p:"shàn yǔ è",  k:"선과 악"},
+      {t:"w", h:"分辨",   p:"fēnbiàn",    k:"분별하다"},
+      {t:"w", h:"水果",   p:"shuǐguǒ",    k:"과일"},
+      {t:"w", h:"肯定",   p:"kěndìng",    k:"반드시, 틀림없이"},
+      {t:"w", h:"死掉",   p:"sǐdiào",     k:"죽다"},
+      {t:"s", h:"我允许你吃所有树上的水果。", p:"Wǒ yǔnxǔ nǐ chī suǒyǒu shù shang de shuǐguǒ.", k:"나는 네가 모든 나무의 과일을 먹는 것을 허락한다."},
+      {t:"s", h:"可是，你不要吃可以分辨善与恶的树上的水果。", p:"Kěshì, nǐ bú yào chī kěyǐ fēnbiàn shàn yǔ è de shù shang de shuǐguǒ.", k:"하지만 선과 악을 분별하는 나무의 과일은 먹지 마라."},
+      {t:"s", h:"如果你吃了它，肯定会死掉。", p:"Rúguǒ nǐ chī le tā, kěndìng huì sǐdiào.", k:"만약 네가 그것을 먹는다면 반드시 죽게 될 것이다."},
+    ]
+  },
+  {
+    id:8, title:"他们做错了什么？", korean:"그들은 무슨 죄를 지었을까요? (2)",
+    cards:[
+      {t:"w", h:"有一天", p:"yǒu yī tiān", k:"어느 날"},
+      {t:"w", h:"撒旦",   p:"sādàn",       k:"사탄"},
+      {t:"w", h:"变成",   p:"biànchéng",   k:"~로 변하다"},
+      {t:"w", h:"蛇",     p:"shé",         k:"뱀"},
+      {t:"w", h:"诱惑",   p:"yòuhuò",      k:"유혹하다"},
+      {t:"w", h:"要是",   p:"yàoshi",      k:"만약 ~하면"},
+      {t:"w", h:"果子",   p:"guǒzi",       k:"과일, 열매"},
+      {t:"w", h:"一样",   p:"yīyàng",      k:"~와 같다"},
+      {t:"w", h:"终于",   p:"zhōngyú",     k:"결국, 마침내"},
+      {t:"w", h:"被",     p:"bèi",         k:"~에게 당하다 (피동)"},
+      {t:"s", h:"有一天，撒旦变成蛇诱惑夏娃说：", p:"Yǒu yī tiān, sādàn biànchéng shé yòuhuò xiàwá shuō:", k:"어느 날 사탄이 뱀으로 가장해 이브를 유혹하며 말했습니다."},
+      {t:"s", h:"你要是吃善恶树上的果子，你就会像上帝一样的。", p:"Nǐ yàoshi chī shàn è shù shang de guǒzi, nǐ jiù huì xiàng shàngdì yīyàng de.", k:"네가 선악과를 먹으면 하나님과 같이 될 것이다."},
+      {t:"s", h:"被诱惑的夏娃终于吃了那个果子。", p:"Bèi yòuhuò de xiàwá zhōngyú chī le nà ge guǒzi.", k:"유혹을 당한 이브는 결국 그 과일을 먹었습니다."},
+      {t:"s", h:"她又把果子给了亚当，他也吃了。", p:"Tā yòu bǎ guǒzi gěi le yādāng, tā yě chī le.", k:"그녀는 또 과일을 아담에게 주었고, 그도 먹었습니다."},
+    ]
+  },
+  {
+    id:9, title:"亚当和夏娃怎么样了？", korean:"아담과 이브는 어떻게 되었을까요? (1)",
+    cards:[
+      {t:"w", h:"怎么样", p:"zěnmeyàng",  k:"어떻게 하다"},
+      {t:"w", h:"惩罚",   p:"chéngfá",    k:"벌을 내리다, 징벌하다"},
+      {t:"w", h:"生孩子", p:"shēng háizi", k:"아기를 낳다"},
+      {t:"w", h:"丈夫",   p:"zhàngfu",    k:"남편"},
+      {t:"w", h:"统治",   p:"tǒngzhì",    k:"지배하다, 통치하다"},
+      {t:"s", h:"上帝惩罚了他们。", p:"Shàngdì chéngfá le tāmen.", k:"하나님은 그들에게 벌을 내리셨습니다."},
+      {t:"s", h:"上帝对夏娃说：你会受生孩子的痛苦。", p:"Shàngdì duì xiàwá shuō: nǐ huì shòu shēng háizi de tòngkǔ.", k:"하나님은 이브에게 말씀하셨습니다. 너는 아이를 낳는 고통을 받을 것이다."},
+      {t:"s", h:"你的丈夫也会统治你。", p:"Nǐ de zhàngfu yě huì tǒngzhì nǐ.", k:"너의 남편이 너를 지배할 것이다."},
+    ]
+  },
+  {
+    id:10, title:"亚当和夏娃怎么样了？", korean:"아담과 이브는 어떻게 되었을까요? (2)",
+    cards:[
+      {t:"w", h:"必须",   p:"bìxū",       k:"반드시, 꼭"},
+      {t:"w", h:"汗流满面",p:"hànliú mǎnmiàn",k:"온 얼굴에 땀을 흘리다"},
+      {t:"w", h:"黄土",   p:"huángtǔ",    k:"흙, 황토"},
+      {t:"w", h:"最后",   p:"zuìhòu",     k:"마지막으로"},
+      {t:"w", h:"皮衣",   p:"píyī",       k:"가죽 옷"},
+      {t:"w", h:"穿",     p:"chuān",      k:"입다"},
+      {t:"w", h:"赶出",   p:"gǎnchū",     k:"쫓아내다"},
+      {t:"w", h:"原本",   p:"yuánběn",    k:"원래, 본래"},
+      {t:"w", h:"一辈子", p:"yībèizi",    k:"한평생"},
+      {t:"w", h:"伊甸园", p:"yīdiànyuán", k:"에덴동산"},
+      {t:"s", h:"并对亚当说：你必须汗流满面，才有饭吃，一直到你死去。", p:"Bìng duì yādāng shuō: nǐ bìxū hànliú mǎnmiàn, cái yǒu fànchī, yīzhí dào nǐ sǐqù.", k:"또 아담에게 말씀하셨습니다. 너는 반드시 온 얼굴에 땀을 흘려야 먹을 것이 있고, 죽을 때까지 그렇다."},
+      {t:"s", h:"并且你生于黄土，就归于黄土吧。", p:"Bìngqiě nǐ shēngyú huángtǔ, jiù guīyú huángtǔ ba.", k:"또한 너는 흙에서 났으니 흙으로 돌아갈 것이다."},
+      {t:"s", h:"最后，上帝为亚当和夏娃做了皮衣，给他们穿上。", p:"Zuìhòu, shàngdì wèi yādāng hé xiàwá zuò le píyī, gěi tāmen chuān shang.", k:"마지막으로 하나님은 아담과 이브를 위해 가죽 옷을 만들어 입히셨습니다."},
+      {t:"s", h:"然后把他们赶出了原本可以住上一辈子的伊甸园。", p:"Ránhòu bǎ tāmen gǎnchū le yuánběn kěyǐ zhùshang yībèizi de yīdiànyuán.", k:"그런 다음 원래 평생 살 수 있었던 에덴동산에서 쫓아내셨습니다."},
+    ]
+  },
+  {
+    id:11, title:"上帝为什么惩罚了他们？", korean:"하나님은 왜 그들을 벌하셨을까요? (1)",
+    cards:[
+      {t:"w", h:"严厉",   p:"yánlì",      k:"혹독하다"},
+      {t:"w", h:"因为",   p:"yīnwèi",     k:"왜냐하면, ~때문에"},
+      {t:"w", h:"不听",   p:"bù tīng",    k:"말을 듣지 않다"},
+      {t:"w", h:"听从",   p:"tīngcóng",   k:"따르다, 복종하다"},
+      {t:"w", h:"一旦",   p:"yīdàn",      k:"일단"},
+      {t:"w", h:"跟随",   p:"gēnsuí",     k:"따라가다, 뒤따르다"},
+      {t:"w", h:"进入",   p:"jìnrù",      k:"들어가다"},
+      {t:"s", h:"那就是因为他们不听上帝的话，而听从撒旦的话。", p:"Nà jiù shì yīnwèi tāmen bù tīng shàngdì de huà, ér tīngcóng sādàn de huà.", k:"그것은 그들이 하나님의 말씀을 듣지 않고 사탄의 말을 따랐기 때문입니다."},
+      {t:"s", h:"他们一旦跟随撒旦，撒旦就进入了他们之中。", p:"Tāmen yīdàn gēnsuí sādàn, sādàn jiù jìnrù le tāmen zhī zhōng.", k:"그들이 일단 사탄을 따르자 사탄이 그들 안으로 들어갔습니다."},
+    ]
+  },
+  {
+    id:12, title:"上帝为什么惩罚了他们？", korean:"하나님은 왜 그들을 벌하셨을까요? (2)",
+    cards:[
+      {t:"w", h:"成为",   p:"chéngwéi",   k:"~가 되다"},
+      {t:"w", h:"君王",   p:"jūnwáng",    k:"왕"},
+      {t:"w", h:"奴隶",   p:"núlì",       k:"노예, 종"},
+      {t:"w", h:"思考",   p:"sīkǎo",      k:"생각하다"},
+      {t:"w", h:"行动",   p:"xíngdòng",   k:"행동하다"},
+      {t:"w", h:"说话",   p:"shuōhuà",    k:"말하다, 이야기하다"},
+      {t:"w", h:"结果",   p:"jiéguǒ",     k:"결국, 끝내"},
+      {t:"w", h:"原罪",   p:"yuánzuì",    k:"죄성, 원죄"},
+      {t:"s", h:"撒旦成为他们的君王，而他们成为撒旦的奴隶。", p:"Sādàn chéngwéi tāmen de jūnwáng, ér tāmen chéngwéi sādàn de núlì.", k:"사탄은 그들의 왕이 되고, 그들은 사탄의 노예가 되었습니다."},
+      {t:"s", h:"像撒旦一样，开始思考、行动和说话。", p:"Xiàng sādàn yīyàng, kāishǐ sīkǎo, xíngdòng hé shuōhuà.", k:"사탄과 같이 생각하고 행동하고 말하기 시작했습니다."},
+      {t:"s", h:"结果，他们有了撒旦之心。这叫作原罪。", p:"Jiéguǒ, tāmen yǒu le sādàn zhī xīn. Zhè jiào zuò yuánzuì.", k:"결국 그들은 사탄의 마음을 가졌습니다. 이것을 죄성이라고 부릅니다."},
+    ]
+  },
+  {
+    id:13, title:"上帝为什么惩罚了他们？", korean:"하나님은 왜 그들을 벌하셨을까요? (3)",
+    cards:[
+      {t:"w", h:"这样",   p:"zhèyàng",    k:"이렇게"},
+      {t:"w", h:"污染",   p:"wūrǎn",      k:"오염되다"},
+      {t:"w", h:"神圣",   p:"shénshèng",  k:"거룩하다"},
+      {t:"w", h:"不可能", p:"bùkěnéng",   k:"~할 수 없다"},
+      {t:"w", h:"一起",   p:"yīqǐ",       k:"함께, 같이"},
+      {t:"w", h:"仍然",   p:"réngrán",    k:"여전히"},
+      {t:"w", h:"赶出去", p:"gǎnchūqù",   k:"쫓아내다, 몰아내다"},
+      {t:"w", h:"理由",   p:"lǐyóu",      k:"이유, 원인"},
+      {t:"s", h:"这样一个被罪恶污染过的人，就不可能和神圣的上帝一起生活。", p:"Zhèyàng yī gè bèi zuì è wūrǎn guò de rén, jiù bù kěnéng hé shénshèng de shàngdì yīqǐ shēnghuó.", k:"이렇게 죄악에 오염된 사람은 거룩하신 하나님과 함께 살 수 없습니다."},
+      {t:"s", h:"这是上帝很爱他们，可仍然把他们赶出去的理由。", p:"Zhèshì shàngdì hěn ài tāmen, kě réngrán bǎ tāmen gǎnchūqù de lǐyóu.", k:"이것이 하나님이 그들을 사랑하시면서도 여전히 내쫓으신 이유입니다."},
+    ]
+  },
+  {
+    id:14, title:"我们也是个罪人吗？", korean:"우리도 죄인인가요? (1)",
+    cards:[
+      {t:"w", h:"也是",   p:"yě shì",     k:"역시 ~이다"},
+      {t:"w", h:"罪人",   p:"zuìrén",     k:"죄인"},
+      {t:"w", h:"那么",   p:"nàme",       k:"그러면"},
+      {t:"w", h:"后代",   p:"hòudài",     k:"후손, 후대"},
+      {t:"w", h:"具有",   p:"jùyǒu",      k:"가지고 있다, 갖추다"},
+      {t:"w", h:"从…而来",p:"cóng…ér lái",k:"~로부터 오다"},
+      {t:"s", h:"那么，我们也是个罪人吗？", p:"Nà me, wǒmen yě shì ge zuìrén ma?", k:"그러면 우리도 역시 죄인일까요?"},
+      {t:"s", h:"是的，我们都是罪人。", p:"Shì de, wǒmen dōu shì zuìrén.", k:"그렇습니다. 우리는 모두 죄인입니다."},
+      {t:"s", h:"我们是亚当和夏娃的后代。", p:"Wǒmen shì yādāng hé xiàwá de hòudài.", k:"우리는 아담과 이브의 후손입니다."},
+      {t:"s", h:"我们具有从他们而来的原罪。", p:"Wǒmen jùyǒu cóng tāmen ér lái de yuánzuì.", k:"우리는 그들로부터 내려온 죄성을 가지고 있습니다."},
+    ]
+  },
+  {
+    id:15, title:"我们也是个罪人吗？", korean:"우리도 죄인인가요? (2)",
+    cards:[
+      {t:"w", h:"从出生之日起",p:"cóng chūshēng zhī rìqǐ",k:"태어날 때부터"},
+      {t:"w", h:"带着",   p:"dàizhe",     k:"지니다, 가지다"},
+      {t:"w", h:"犯罪",   p:"fànzuì",     k:"죄를 짓다"},
+      {t:"w", h:"活着",   p:"huózhe",     k:"살아가다"},
+      {t:"w", h:"如果",   p:"rúguǒ",      k:"만약에"},
+      {t:"w", h:"接受",   p:"jiēshòu",    k:"받다, 받아들이다"},
+      {t:"w", h:"之后",   p:"zhīhòu",     k:"그 후, 그 뒤"},
+      {t:"w", h:"扔进",   p:"rēngjìn",    k:"던지다, 내버리다"},
+      {t:"s", h:"我们从出生之日起，就带着原罪，每天都犯罪而活着。", p:"Wǒmen cóng chūshēng zhī rìqǐ, jiù dàizhe yuánzuì, měi tiān dōu fànzuì ér huózhe.", k:"우리는 태어날 때부터 죄성을 지니고, 매일 죄를 지으며 살아갑니다."},
+      {t:"s", h:"如果我们这样活下去，带着罪而死去，接受审判之后，将被扔进地狱里。", p:"Rúguǒ wǒmen zhèyàng huó xiàqù, dàizhe zuì ér sǐ qù, jiēshòu shěnpàn zhīhòu, jiāng bèi rēngjìn dìyù lǐ.", k:"이렇게 죄를 지으며 살다가 죽으면, 심판을 받은 후 지옥으로 던져질 것입니다."},
+    ]
+  },
+  {
+    id:16, title:"地狱是什么样子的？", korean:"지옥은 어떤 곳인가요? (1)",
+    cards:[
+      {t:"w", h:"无法",   p:"wúfǎ",       k:"~할 방법이 없다"},
+      {t:"w", h:"形容",   p:"xíngróng",   k:"형용하다"},
+      {t:"w", h:"恐怖",   p:"kǒngbù",     k:"공포, 무섭다"},
+      {t:"w", h:"地方",   p:"dìfang",     k:"곳, 장소"},
+      {t:"w", h:"背叛",   p:"bèipàn",     k:"배반하다"},
+      {t:"w", h:"锁住",   p:"suǒzhù",     k:"가두다"},
+      {t:"w", h:"天使",   p:"tiānshǐ",    k:"천사"},
+      {t:"w", h:"制造",   p:"zhìzào",     k:"만들다, 제작하다"},
+      {t:"w", h:"人们",   p:"rénmen",     k:"사람들"},
+      {t:"w", h:"抛弃",   p:"pāoqì",      k:"던져 버리다"},
+      {t:"s", h:"地狱是一个无法形容的恐怖地方。", p:"Dìyù shì yī ge wúfǎ xíngróng de kǒngbù dìfang.", k:"지옥은 형용할 수 없는 무서운 곳입니다."},
+      {t:"s", h:"为了要锁住背叛上帝的撒旦和他的天使们，上帝就制造了这个地方。", p:"Wèi le yào suǒzhù bèipàn shàngdì de sādàn hé tā de tiānshǐmen, shàngdì jiù zhìzào le zhège dìfang.", k:"하나님을 배반한 사탄과 그의 천사들을 가두려고 하나님이 이곳을 만드셨습니다."},
+      {t:"s", h:"受到撒旦的诱惑而犯罪的人们，也将被抛弃在这个地方。", p:"Shòudào sādàn de yòuhuò ér fànzuì de rénmen, yě jiāng bèi pāoqì zài zhège dìfang.", k:"사탄의 유혹에 빠져 죄를 지은 사람들도 이곳에 던져집니다."},
+    ]
+  },
+  {
+    id:17, title:"地狱是什么样子的？", korean:"지옥은 어떤 곳인가요? (2)",
+    cards:[
+      {t:"w", h:"一片",   p:"yī piàn",    k:"온통, 일대"},
+      {t:"w", h:"火海",   p:"huǒhǎi",     k:"불바다"},
+      {t:"w", h:"硫磺",   p:"liúhuáng",   k:"유황"},
+      {t:"w", h:"虫",     p:"chóng",      k:"벌레"},
+      {t:"w", h:"不死",   p:"bù sǐ",      k:"죽지 않다"},
+      {t:"w", h:"不灭",   p:"bú miè",     k:"꺼지지 않다"},
+      {t:"w", h:"盐",     p:"yán",        k:"소금"},
+      {t:"w", h:"腌",     p:"yān",        k:"절이다"},
+      {t:"w", h:"即使",   p:"jíshǐ",      k:"설사, 비록 ~하더라도"},
+      {t:"w", h:"嗓子",   p:"sǎngzi",     k:"목"},
+      {t:"w", h:"燃烧",   p:"ránshāo",    k:"타다, 연소하다"},
+      {t:"w", h:"还是",   p:"háishi",     k:"여전히, ~조차도"},
+      {t:"s", h:"地狱是一片火海、硫磺火湖。", p:"Dìyù shì yī piàn huǒhǎi, liúhuáng huǒhú.", k:"지옥은 온통 불바다, 유황 불못입니다."},
+      {t:"s", h:"在那里，吃尸体的虫是不死的，火也是不灭的。", p:"Zài nàlǐ, chī shītǐ de chóng shì bù sǐ de, huǒ yě shì bú miè de.", k:"그곳에서는 시체를 파먹는 벌레들이 죽지 않고, 불도 꺼지지 않습니다."},
+      {t:"s", h:"好像所有的人都被盐腌下似的，被火当盐来腌。", p:"Hǎoxiàng suǒyǒu de rén dōu bèi yán yān xià sìde, bèi huǒ dāng yán lái yān.", k:"마치 모든 사람이 소금에 절여지듯, 불에 의해 절여질 것입니다."},
+      {t:"s", h:"即使渴到嗓子，被燃烧了，还是连一口水也不能喝。", p:"Jíshǐ kě dào sǎngzi, bèi ránshāo le, háishi lián yī kǒu shuǐ yě bù néng hē.", k:"설사 목이 타들어가도 물 한 모금조차 마실 수 없습니다."},
+    ]
+  },
+  {
+    id:18, title:"地狱是什么样子的？", korean:"지옥은 어떤 곳인가요? (3)",
+    cards:[
+      {t:"w", h:"一旦",   p:"yīdàn",      k:"일단"},
+      {t:"w", h:"抛入",   p:"pāorù",      k:"던지다, 내버리다"},
+      {t:"w", h:"犯罪行为",p:"fànzuì xíngwéi",k:"죄 행위"},
+      {t:"w", h:"后悔",   p:"hòuhuǐ",     k:"후회하다"},
+      {t:"w", h:"已经",   p:"yǐjīng",     k:"이미, 벌써"},
+      {t:"w", h:"来不及", p:"lái bù jí",  k:"이미 늦다, 미치지 못하다"},
+      {t:"w", h:"非常",   p:"fēicháng",   k:"매우, 대단히"},
+      {t:"w", h:"大声",   p:"dàshēng",    k:"큰 소리"},
+      {t:"w", h:"喊叫",   p:"hǎnjiào",    k:"외치다, 고함치다"},
+      {t:"w", h:"火焰",   p:"huǒyàn",     k:"화염, 불꽃"},
+      {t:"s", h:"一旦抛入地狱，即使对自己的犯罪行为表示后悔，也已经来不及了。", p:"Yīdàn pāorù dìyù, jíshǐ duì zìjǐ de fànzuì xíngwéi biǎoshì hòuhuǐ, yě yǐjīng lái bù jí le.", k:"일단 지옥에 던져지면 아무리 후회해도 이미 늦습니다."},
+      {t:"s", h:"非常痛苦，大声地喊叫。", p:"Fēicháng tòngkǔ, dàshēng de hǎnjiào.", k:"매우 고통스러워 큰소리로 외칩니다."},
+      {t:"s", h:"想死，却死不了，永远留在火焰里，受痛苦。", p:"Xiǎng sǐ, què sǐ bu liǎo, yǒngyuǎn liú zài huǒyàn lǐ, shòu tòngkǔ.", k:"죽고 싶어도 죽을 수 없고, 영원히 화염 속에서 고통을 받습니다."},
+    ]
+  },
+  {
+    id:19, title:"那么，天堂是怎样的？", korean:"그러면 천국은 어떤 곳일까요?",
+    cards:[
+      {t:"w", h:"那么",   p:"nàme",       k:"그러면"},
+      {t:"w", h:"天堂",   p:"tiāntáng",   k:"천국"},
+      {t:"w", h:"耶稣",   p:"yēsū",       k:"예수"},
+      {t:"w", h:"里面",   p:"lǐmiàn",     k:"안"},
+      {t:"w", h:"各种各样",p:"gèzhónggèyàng",k:"여러 가지"},
+      {t:"w", h:"珠宝首饰",p:"zhūbǎo shǒushì",k:"보석장식"},
+      {t:"w", h:"金银宝石",p:"jīnyín bǎoshí",k:"금은보화"},
+      {t:"w", h:"而且",   p:"érqiě",      k:"뿐만 아니라"},
+      {t:"w", h:"流淌",   p:"liútǎng",    k:"흐르다"},
+      {t:"w", h:"生命水", p:"shēngmìngshuǐ",k:"생명수"},
+      {t:"w", h:"水晶",   p:"shuǐjīng",   k:"수정"},
+      {t:"w", h:"明亮",   p:"míngliàng",  k:"맑고 깨끗하다, 밝다"},
+      {t:"s", h:"那么，天堂是怎样的？", p:"Nàme, tiāntáng shì zěnyàng de?", k:"그러면 천국은 어떤 곳일까요?"},
+      {t:"s", h:"天堂是一个和上帝与耶稣永远在一起幸福生活的地方。", p:"Tiāntáng shì yī ge hé shàngdì yǔ yēsū yǒngyuǎn zài yīqǐ xìngfú shēnghuó de dìfang.", k:"천국은 하나님과 예수님과 함께 영원히 행복하게 사는 곳입니다."},
+      {t:"s", h:"里面布置了各种各样的珠宝首饰、金银宝石。", p:"Lǐmiàn bùzhì le gèzhónggèyàng de zhūbǎoshǒushì, jīnyínbǎoshí.", k:"안에는 여러 가지 보석장식과 금은보화가 장식되어 있습니다."},
+      {t:"s", h:"而且还流淌着一条生命水的河，它就像水晶一样明亮。", p:"Érqiě hái liútǎng zhe yī tiáo shēngmìngshuǐ de hé, tā jiù xiàng shuǐjīng yīyàng míngliàng.", k:"뿐만 아니라 생명수의 강이 흐르는데, 그것은 수정같이 맑고 깨끗합니다."},
+    ]
+  },
+];
+
+// ══════════════════════════════════════════════════════════
+// 상태
+// ══════════════════════════════════════════════════════════
+let currentFilter = 'all';
+let currentUnitId = null;
+let studyCards    = [];
+let studyMode     = null;
+let currentIdx    = 0;
+let currentStep   = 0;
+let currentResult = null;
+let score         = {correct:0, wrong:0};
+let wrongCards    = [];      // 세션 전체 누적 오답 (중복 제거)
+let wrongSet      = new Set(); // 중복 방지용
+let starred       = new Set();
+let lastCards     = [];
+
+// ══════════════════════════════════════════════════════════
+// 초기화
+// ══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  updateCounts();
+  renderUnitList();
+});
+
+function allCards() {
+  return UNITS.flatMap(u => u.cards.map(c => ({...c, unitId:u.id, unitTitle:u.title})));
+}
+
+function getFiltered(cards) {
+  if (currentFilter === 'all') return cards;
+  const map = {word:'w', sentence:'s'};
+  return cards.filter(c => c.t === map[currentFilter]);
+}
+
+function updateCounts() {
+  const all = allCards();
+  const setT = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  setT('cnt-all',  all.length);
+  setT('cnt-word', all.filter(c=>c.t==='w').length);
+  setT('cnt-sent', all.filter(c=>c.t==='s').length);
+  setT('start-cnt', getFiltered(all).length);
+  updateStarUI();
+}
+
+function updateStarUI() {
+  const cnt = starred.size;
+  const ids = ['star-cnt','star-cnt2','unit-star-cnt'];
+  ids.forEach(id => { const el=document.getElementById(id); if(el) el.textContent=cnt; });
+  const ssb = document.getElementById('star-start-btn'); if(ssb) ssb.style.display=cnt>0?'block':'none';
+  const usb = document.getElementById('unit-star-btn');  if(usb) usb.style.display=cnt>0?'block':'none';
+  const dsb = document.getElementById('d-star-btn');     if(dsb) dsb.style.display=cnt>0?'block':'none';
+}
+
+function setFilter(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.className='filter-btn');
+  const cls = type==='all'?'on-all':type==='word'?'on-word':'on-sent';
+  btn.classList.add(cls);
+  updateCounts();
+  if (currentUnitId !== null) renderUnitCards(currentUnitId);
+}
+
+// ══════════════════════════════════════════════════════════
+// 유닛 목록
+// ══════════════════════════════════════════════════════════
+function renderUnitList() {
+  const list = document.getElementById('unit-list');
+  list.innerHTML = '';
+  UNITS.forEach(u => {
+    const wc = u.cards.filter(c=>c.t==='w').length;
+    const sc = u.cards.filter(c=>c.t==='s').length;
+    const div = document.createElement('div');
+    div.className = 'unit-item';
+    div.innerHTML = `
+      <div class="unit-num">${String(u.id).padStart(2,'0')}</div>
+      <div class="unit-info">
+        <div class="unit-title">${u.title}</div>
+        <div class="unit-sub">${u.korean}</div>
+      </div>
+      <div class="unit-counts">
+        <span style="color:#a78bfa;">단어 ${wc}</span>
+        <span style="color:#fbbf24;">문장 ${sc}</span>
+      </div>
+    `;
+    div.onclick = () => showUnitScreen(u.id);
+    list.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// 유닛 상세
+// ══════════════════════════════════════════════════════════
+function showUnitScreen(unitId) {
+  currentUnitId = unitId;
+  const u = UNITS.find(u=>u.id===unitId);
+  document.getElementById('unit-detail-label').textContent = `UNIT ${String(unitId).padStart(2,'0')}`;
+  document.getElementById('unit-detail-title').textContent = u.title;
+  document.getElementById('unit-detail-sub').textContent   = u.korean;
+
+  renderUnitCards(unitId);
+
+  document.getElementById('home-screen').style.display  = 'none';
+  document.getElementById('unit-screen').style.display  = 'block';
+  document.getElementById('study-screen').style.display = 'none';
+  document.getElementById('done-screen').style.display  = 'none';
+  document.getElementById('back-btn').style.display     = 'block';
+}
+
+function renderUnitCards(unitId) {
+  const u = UNITS.find(u=>u.id===unitId);
+  const cards = getFiltered(u.cards.map(c=>({...c,unitId:u.id,unitTitle:u.title})));
+  document.getElementById('unit-cnt').textContent = cards.length;
+
+  const list = document.getElementById('unit-card-list');
+  list.innerHTML = '';
+  const all = getFiltered(u.cards.map(c=>({...c,unitId:u.id,unitTitle:u.title})));
+  all.forEach((c,i) => {
+    const isW = c.t==='w';
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    const hEsc = c.h.replace(/'/g,"\\'");
+    div.innerHTML = `
+      <span class="type-pill ${isW?'pill-word':'pill-sent'}">${isW?'단어':'문장'}</span>
+      <span class="list-hanzi">${c.h}</span>
+      <button class="list-speak" onclick="speakText('${hEsc}')">🔊</button>
+      <button class="list-star ${starred.has(c.h)?'on':''}" id="us-${unitId}-${i}" onclick="toggleStar('${hEsc}',${unitId},${i})">★</button>
+    `;
+    list.appendChild(div);
+  });
+  updateStarUI();
+}
+
+// ══════════════════════════════════════════════════════════
+// TTS
+// ══════════════════════════════════════════════════════════
+function speakText(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  function go() {
+    const voices = window.speechSynthesis.getVoices();
+    const zh = voices.find(v=>v.lang.startsWith('zh'));
+    const u  = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN'; u.rate = 0.85;
+    if (zh) u.voice = zh;
+    window.speechSynthesis.speak(u);
+  }
+  window.speechSynthesis.getVoices().length > 0 ? go() : (window.speechSynthesis.onvoiceschanged = go);
+}
+
+function speakCur(e) {
+  if (e) e.stopPropagation();
+  const c = studyCards[currentIdx]; if (!c) return;
+  const btn = document.getElementById('speak-btn');
+  window.speechSynthesis.cancel();
+  btn.textContent = '🔊 재생중...'; btn.classList.add('playing');
+  function go() {
+    const voices = window.speechSynthesis.getVoices();
+    const zh = voices.find(v=>v.lang.startsWith('zh'));
+    const u  = new SpeechSynthesisUtterance(c.h);
+    u.lang = 'zh-CN'; u.rate = 0.85;
+    if (zh) u.voice = zh;
+    u.onend = u.onerror = () => { btn.textContent='🔊 듣기'; btn.classList.remove('playing'); };
+    window.speechSynthesis.speak(u);
+  }
+  window.speechSynthesis.getVoices().length > 0 ? go() : (window.speechSynthesis.onvoiceschanged = go);
+}
+
+// ══════════════════════════════════════════════════════════
+// 즐겨찾기
+// ══════════════════════════════════════════════════════════
+function toggleStar(hanzi, unitId, idx) {
+  starred.has(hanzi) ? starred.delete(hanzi) : starred.add(hanzi);
+  const btn = document.getElementById(`us-${unitId}-${idx}`);
+  if (btn) btn.className = 'list-star' + (starred.has(hanzi)?' on':'');
+  updateStarUI();
+}
+
+function toggleStarCur() {
+  const c = studyCards[currentIdx]; if (!c) return;
+  starred.has(c.h) ? starred.delete(c.h) : starred.add(c.h);
+  document.getElementById('card-star').className = 'card-star' + (starred.has(c.h)?' on':'');
+  updateStarUI();
+}
+
+// ══════════════════════════════════════════════════════════
+// 화면 전환
+// ══════════════════════════════════════════════════════════
+function goHome() {
+  currentUnitId = null;
+  document.getElementById('home-screen').style.display  = 'block';
+  document.getElementById('unit-screen').style.display  = 'none';
+  document.getElementById('study-screen').style.display = 'none';
+  document.getElementById('done-screen').style.display  = 'none';
+  document.getElementById('back-btn').style.display     = 'none';
+  updateCounts(); renderUnitList();
+}
+
+function showStudyScreen() {
+  document.getElementById('home-screen').style.display  = 'none';
+  document.getElementById('unit-screen').style.display  = 'none';
+  document.getElementById('done-screen').style.display  = 'none';
+  document.getElementById('study-screen').style.display = 'block';
+  document.getElementById('back-btn').style.display     = 'block';
+}
+
+function showDoneScreen() {
+  document.getElementById('home-screen').style.display  = 'none';
+  document.getElementById('unit-screen').style.display  = 'none';
+  document.getElementById('study-screen').style.display = 'none';
+  document.getElementById('done-screen').style.display  = 'block';
+  document.getElementById('back-btn').style.display     = 'none';
+}
+
+// ══════════════════════════════════════════════════════════
+// 학습 시작
+// ══════════════════════════════════════════════════════════
+function shuffle(arr) { return [...arr].sort(()=>Math.random()-0.5); }
+
+function startStudy(mode) {
+  studyMode = mode;
+  if (mode==='all-filter') {
+    studyCards = shuffle(getFiltered(allCards()));
+  } else if (mode==='unit') {
+    const u = UNITS.find(u=>u.id===currentUnitId);
+    studyCards = shuffle(getFiltered(u.cards.map(c=>({...c,unitId:u.id,unitTitle:u.title}))));
+  } else if (mode==='unit-star') {
+    const u = UNITS.find(u=>u.id===currentUnitId);
+    studyCards = shuffle(u.cards.filter(c=>starred.has(c.h)).map(c=>({...c,unitId:u.id,unitTitle:u.title})));
+  } else if (mode==='star') {
+    studyCards = shuffle(allCards().filter(c=>starred.has(c.h)));
+  } else if (mode==='wrong') {
+    studyCards = shuffle(wrongCards);
+  } else if (mode==='retry') {
+    studyCards = shuffle(lastCards);
+  }
+  if (!studyCards.length) return;
+  lastCards = [...studyCards];
+  currentIdx=0; currentStep=0; currentResult=null;
+  score={correct:0,wrong:0};
+  showStudyScreen();
+  renderCard();
+}
+
+// ══════════════════════════════════════════════════════════
+// 카드 렌더
+// ══════════════════════════════════════════════════════════
+function renderCard() {
+  const c = studyCards[currentIdx]; if (!c) return;
+  const pct = (currentIdx/studyCards.length)*100;
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-label').textContent = `${currentIdx+1} / ${studyCards.length}`;
+  document.getElementById('ok-cnt').textContent = '✓'+score.correct;
+  document.getElementById('ng-cnt').textContent = '✗'+score.wrong;
+
+  const isW = c.t==='w';
+  const badge = document.getElementById('card-badge');
+  badge.textContent = isW?'단어':'문장';
+  badge.className = 'type-pill '+(isW?'pill-word':'pill-sent');
+
+  document.getElementById('card-star').className = 'card-star'+(starred.has(c.h)?' on':'');
+  document.getElementById('card-unit-label').textContent = `Unit ${c.unitId}`;
+
+  const len = c.h.length;
+  const fs  = isW?'42px':len>22?'14px':len>14?'17px':'21px';
+  const hw  = isW?'700':'500';
+  const ls  = isW?'3px':'0.5px';
+  document.getElementById('c-hanzi').style.cssText = `font-size:${fs};font-weight:${hw};letter-spacing:${ls};`;
+  document.getElementById('c-hanzi').textContent = c.h;
+  document.getElementById('c-py').textContent = c.p;
+  document.getElementById('c-kr').textContent = c.k;
+
+  setStep(0);
+  document.getElementById('result-btns').style.display = 'none';
+  document.getElementById('result-fb').style.display   = 'none';
+  document.getElementById('study-card').className      = 'study-card';
+  document.getElementById('speak-btn').textContent     = '🔊 듣기';
+  document.getElementById('speak-btn').classList.remove('playing');
+}
+
+function setStep(s) {
+  currentStep = s;
+  document.getElementById('sec-py').style.display = s>=1?'block':'none';
+  document.getElementById('div1').style.display   = s>=1?'block':'none';
+  document.getElementById('sec-kr').style.display = s>=2?'block':'none';
+  document.getElementById('div2').style.display   = s>=2?'block':'none';
+
+  const hint = document.getElementById('tap-hint');
+  if (s===0)      { hint.textContent='탭 → 병음 확인'; hint.style.display='block'; }
+  else if (s===1) { hint.textContent='탭 → 한국어 확인'; hint.style.display='block'; }
+  else            { hint.style.display='none'; }
+
+  const sc = document.getElementById('study-card');
+  sc.className = 'study-card'+(s===1?' s1':s===2?' s2':'');
+
+  for (let i=0;i<3;i++) {
+    const d = document.getElementById('d'+i);
+    d.style.width      = i===s?'24px':'8px';
+    d.style.background = i<=s?'#388bfd':'#21262d';
+  }
+  if (s===2) document.getElementById('result-btns').style.display='flex';
+}
+
+function nextStep() {
+  if (currentResult) return;
+  if (currentStep<2) setStep(currentStep+1);
+}
+
+// ══════════════════════════════════════════════════════════
+// 정답 처리
+// ══════════════════════════════════════════════════════════
+function handleResult(ok) {
+  currentResult = ok;
+  const c = studyCards[currentIdx];
+  if (!ok) {
+    // 세션 전체 누적 (중복 제거)
+    if (!wrongSet.has(c.h)) {
+      wrongSet.add(c.h);
+      wrongCards.push(c);
+    }
+  } else {
+    // 정답 맞히면 오답 노트에서 제거
+    if (wrongSet.has(c.h)) {
+      wrongSet.delete(c.h);
+      wrongCards = wrongCards.filter(w => w.h !== c.h);
+    }
+  }
+  ok ? score.correct++ : score.wrong++;
+  updateWrongUI();
+
+  const fb = document.getElementById('result-fb');
+  fb.style.display='block'; fb.textContent=ok?'✓ 정답!':'✗ 다음에 다시!';
+  fb.className='result-fb '+(ok?'ok':'ng');
+  document.getElementById('result-btns').style.display='none';
+  document.getElementById('study-card').className='study-card '+(ok?'ok':'ng');
+
+  setTimeout(()=>{
+    currentResult=null;
+    if (currentIdx+1>=studyCards.length) showResult();
+    else { currentIdx++; renderCard(); }
+  },700);
+}
+
+function updateWrongUI() {
+  const cnt = wrongCards.length;
+  const whb = document.getElementById('wrong-home-btn');
+  const whc = document.getElementById('wrong-home-cnt');
+  if (whb) whb.style.display = cnt>0?'block':'none';
+  if (whc) whc.textContent = cnt;
+  const dwb = document.getElementById('d-wrong-btn');
+  const dwc = document.getElementById('wrong-cnt2');
+  if (dwb) dwb.style.display = cnt>0?'block':'none';
+  if (dwc) dwc.textContent = cnt;
+}
+
+// ══════════════════════════════════════════════════════════
+// 결과
+// ══════════════════════════════════════════════════════════
+function showResult() {
+  document.getElementById('final-ok').textContent = score.correct;
+  document.getElementById('final-ng').textContent = score.wrong;
+  document.getElementById('done-sub').textContent = `총 ${score.correct+score.wrong}장 학습`;
+  document.getElementById('done-emoji').textContent = score.wrong===0?'🎉':score.correct>score.wrong?'👍':'📚';
+  updateWrongUI();
+  updateStarUI();
+  showDoneScreen();
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW 등록 완료'))
+      .catch(e => console.log('SW 오류:', e));
+  });
+}
+</script>
+</body>
+</html>
