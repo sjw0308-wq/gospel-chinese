@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>복음카드 사용법</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0d1117;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #e6edf3;
+  padding: 24px 20px 60px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.title {
+  text-align: center;
+  padding: 28px 0 24px;
+  border-bottom: 1px solid #21262d;
+  margin-bottom: 28px;
+}
+.title .sub { font-size: 11px; color: #484f58; letter-spacing: 3px; margin-bottom: 8px; }
+.title h1 { font-size: 22px; font-weight: 700; color: #79c0ff; margin-bottom: 6px; }
+.title p { font-size: 13px; color: #6b7280; }
+
+.link-box {
+  background: linear-gradient(135deg, rgba(56,139,253,0.15), rgba(167,139,250,0.1));
+  border: 1px solid rgba(56,139,253,0.4);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 28px;
+  text-align: center;
+}
+.link-box .label { font-size: 11px; color: #484f58; letter-spacing: 2px; margin-bottom: 10px; }
+.link-box .url {
+  font-size: 15px; font-weight: 700; color: #79c0ff;
+  word-break: break-all; margin-bottom: 12px;
+}
+.link-box a {
+  display: inline-block;
+  background: rgba(56,139,253,0.2);
+  border: 1px solid rgba(56,139,253,0.4);
+  color: #79c0ff; text-decoration: none;
+  padding: 8px 20px; border-radius: 99px;
+  font-size: 13px; font-weight: 600;
+}
+
+.section { margin-bottom: 28px; }
+.section-title {
+  font-size: 11px; color: #a78bfa;
+  letter-spacing: 2px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: #21262d; }
+
+.step {
+  display: flex; gap: 14px; align-items: flex-start;
+  margin-bottom: 14px;
+}
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(167,139,250,0.15);
+  border: 1px solid rgba(167,139,250,0.3);
+  color: #a78bfa; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.step-text { font-size: 14px; color: #c9d1d9; line-height: 1.6; }
+.step-text strong { color: #e6edf3; }
+
+.install-box {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.install-box .phone {
+  font-size: 12px; font-weight: 700;
+  margin-bottom: 8px;
+}
+.install-box .phone.android { color: #3fb950; }
+.install-box .phone.iphone { color: #79c0ff; }
+.install-box ol {
+  padding-left: 18px;
+  font-size: 13px; color: #8b949e; line-height: 1.9;
+}
+
+.card-flow {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.flow-row {
+  display: flex; align-items: center;
+  gap: 8px; flex-wrap: wrap;
+  font-size: 13px;
+}
+.flow-item {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+}
+.flow-badge {
+  padding: 4px 12px; border-radius: 99px;
+  font-size: 11px; font-weight: 700;
+}
+.flow-badge.hanzi { background: rgba(230,237,243,0.1); color: #e6edf3; border: 1px solid rgba(230,237,243,0.2); }
+.flow-badge.pinyin { background: rgba(121,192,255,0.1); color: #79c0ff; border: 1px solid rgba(121,192,255,0.2); }
+.flow-badge.korean { background: rgba(86,211,100,0.1); color: #56d364; border: 1px solid rgba(86,211,100,0.2); }
+.flow-desc { font-size: 10px; color: #484f58; }
+.flow-arrow { color: #30363d; font-size: 16px; }
+
+.tip-box {
+  background: rgba(251,191,36,0.06);
+  border: 1px solid rgba(251,191,36,0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.tip-box .tip-title { font-size: 12px; color: #fbbf24; font-weight: 700; margin-bottom: 8px; }
+.tip-box p { font-size: 13px; color: #8b949e; line-height: 1.7; }
+
+.footer {
+  text-align: center;
+  padding-top: 24px;
+  border-top: 1px solid #21262d;
+  font-size: 12px; color: #484f58;
+  line-height: 1.8;
+}
+</style>
+</head>
+<body>
+
+<div class="title">
+  <div class="sub">GOSPEL CHINESE</div>
+  <h1>福音学习卡片</h1>
+  <p>중국어로 복음 전하기 · 학습 카드 앱</p>
+</div>
+
+<!-- 링크 -->
+<div class="link-box">
+  <div class="label">앱 주소</div>
+  <div class="url">sjw0308-wq.github.io/gospel-chinese</div>
+  <a href="https://sjw0308-wq.github.io/gospel-chinese" target="_blank">▶ 앱 열기</a>
+</div>
+
+<!-- 설치 방법 -->
+<div class="section">
+  <div class="section-title">📱 홈 화면에 설치하기</div>
+
+  <div class="install-box">
+    <div class="phone android">🤖 안드로이드 (삼성 등)</div>
+    <ol>
+      <li>위 주소를 <strong>크롬</strong>으로 열기</li>
+      <li>우측 상단 <strong>점 세 개 ⋮</strong> 누르기</li>
+      <li><strong>홈 화면에 추가</strong> 선택</li>
+      <li>추가 버튼 누르면 완료!</li>
+    </ol>
+  </div>
+
+  <div class="install-box">
+    <div class="phone iphone">🍎 아이폰</div>
+    <ol>
+      <li>위 주소를 <strong>사파리</strong>로 열기</li>
+      <li>하단 <strong>공유 버튼 □↑</strong> 누르기</li>
+      <li><strong>홈 화면에 추가</strong> 선택</li>
+      <li>추가 버튼 누르면 완료!</li>
+    </ol>
+  </div>
+</div>
+
+<!-- 학습 방법 -->
+<div class="section">
+  <div class="section-title">📖 학습 방법</div>
+
+  <div class="card-flow">
+    <div style="font-size:12px;color:#484f58;margin-bottom:12px;">카드 학습 순서 (탭으로 단계별 확인)</div>
+    <div class="flow-row">
+      <div class="flow-item">
+        <div class="flow-badge hanzi">① 한자</div>
+        <div class="flow-desc">보기</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="flow-badge pinyin">② 병음</div>
+        <div class="flow-desc">탭</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="flow-badge korean">③ 한국어</div>
+        <div class="flow-desc">탭</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-text">카드를 보고 뜻을 떠올려보세요. <strong>🔊 듣기</strong> 버튼으로 중국어 발음을 들을 수 있어요.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-text">카드를 탭하면 병음이 나와요. 다시 탭하면 한국어 뜻이 나와요.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-text">뜻을 확인한 후 <strong>✓ 알았다</strong> 또는 <strong>✗ 몰랐다</strong> 를 눌러주세요.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-text">모르는 카드는 자동으로 <strong>📚 오답 노트</strong>에 모여요. 나중에 따로 복습할 수 있어요.</div>
+  </div>
+</div>
+
+<!-- 기능 안내 -->
+<div class="section">
+  <div class="section-title">⭐ 주요 기능</div>
+
+  <div class="step">
+    <div class="step-num" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);color:#fbbf24;">★</div>
+    <div class="step-text"><strong>즐겨찾기</strong> — 중요한 카드에 별표를 눌러두면 즐겨찾기만 따로 학습할 수 있어요.</div>
+  </div>
+  <div class="step">
+    <div class="step-num" style="background:rgba(248,81,73,0.15);border-color:rgba(248,81,73,0.3);color:#ff7b72;">📚</div>
+    <div class="step-text"><strong>오답 노트</strong> — 틀린 카드가 자동 저장돼요. 여러 유닛을 공부해도 계속 누적돼요.</div>
+  </div>
+  <div class="step">
+    <div class="step-num" style="background:rgba(56,139,253,0.15);border-color:rgba(56,139,253,0.3);color:#79c0ff;">⚡</div>
+    <div class="step-text"><strong>전체 랜덤</strong> — Unit 1~19 전체를 섞어서 학습할 수 있어요.</div>
+  </div>
+</div>
+
+<!-- 바탕화면 설치 -->
+<div class="section">
+  <div class="section-title">🏠 바탕화면(홈화면)에 설치하기</div>
+
+  <div class="install-box">
+    <div class="phone android">🤖 안드로이드 (삼성 갤럭시 등)</div>
+    <ol>
+      <li>앱 주소를 <strong>크롬</strong>으로 열기</li>
+      <li>화면 맨 위 주소창 옆 또는<br>우측 상단 <strong>점 세 개 ⋮</strong> 누르기</li>
+      <li><strong>"홈 화면에 추가"</strong> 선택</li>
+      <li><strong>"추가"</strong> 버튼 누르기</li>
+      <li>홈 화면에 <strong>福 아이콘</strong>이 생겨요! ✅</li>
+    </ol>
+  </div>
+
+  <div class="install-box">
+    <div class="phone iphone">🍎 아이폰 / 아이패드</div>
+    <ol>
+      <li>앱 주소를 <strong>사파리</strong>로 열기<br><span style="font-size:11px;color:#6b7280;">(크롬 말고 반드시 사파리로!)</span></li>
+      <li>화면 하단 가운데 <strong>공유 버튼 □↑</strong> 누르기</li>
+      <li>아래로 스크롤해서 <strong>"홈 화면에 추가"</strong> 선택</li>
+      <li>오른쪽 위 <strong>"추가"</strong> 누르기</li>
+      <li>홈 화면에 <strong>福 아이콘</strong>이 생겨요! ✅</li>
+    </ol>
+  </div>
+
+  <div style="background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);border-radius:10px;padding:12px 14px;font-size:13px;color:#8b949e;line-height:1.7;">
+    📌 설치 후에는 인터넷 없이도 사용 가능해요!<br>앱처럼 전체화면으로 실행돼요.
+  </div>
+</div>
+
+<!-- 소리 설정 -->
+<div class="section">
+  <div class="section-title">🔊 중국어 소리 나오게 하기</div>
+
+  <div class="install-box">
+    <div class="phone android">🤖 안드로이드 (삼성 갤럭시)</div>
+    <ol>
+      <li><strong>설정</strong> 앱 열기</li>
+      <li><strong>일반 관리</strong> 선택</li>
+      <li><strong>언어 및 입력</strong> 선택</li>
+      <li><strong>텍스트 음성 변환</strong> 선택</li>
+      <li><strong>Samsung TTS</strong> 또는 <strong>Google TTS</strong> 선택</li>
+      <li><strong>언어 데이터 설치</strong> 누르기</li>
+      <li>목록에서 <strong>중국어(간체)</strong> 찾아서 다운로드</li>
+      <li>설치 완료 후 앱에서 🔊 버튼 누르면<br>중국어로 읽어줘요! ✅</li>
+    </ol>
+  </div>
+
+  <div class="install-box">
+    <div class="phone iphone">🍎 아이폰 / 아이패드</div>
+    <ol>
+      <li><strong>설정</strong> 앱 열기</li>
+      <li><strong>손쉬운 사용</strong> 선택</li>
+      <li><strong>말한 콘텐츠</strong> 선택</li>
+      <li><strong>음성</strong> 선택</li>
+      <li><strong>중국어(중국 본토)</strong> 선택</li>
+      <li>음성 데이터 <strong>다운로드</strong></li>
+      <li>설치 완료 후 앱에서 🔊 버튼 누르면<br>중국어로 읽어줘요! ✅</li>
+    </ol>
+  </div>
+
+  <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:12px 14px;font-size:13px;color:#8b949e;line-height:1.7;">
+    ⚠️ 소리 설치 후에도 안 들리면?<br>
+    폰 볼륨을 올리고, 무음 모드가 아닌지 확인해주세요.
+  </div>
+</div>
+
+<!-- 팁 -->
+<div class="section">
+  <div class="section-title">💡 학습 팁</div>
+  <div class="tip-box">
+    <div class="tip-title">효과적인 학습 순서</div>
+    <p>① 단어 카드 먼저 → ② 문장 카드 순서로 학습하면 더 잘 외워져요. 유닛 화면에서 카드 종류를 선택할 수 있어요.</p>
+  </div>
+</div>
+
+<div class="footer">
+  중국어로 복음 전하기 학습 카드<br>
+  Unit 01 ~ 19 · 단어 217개 · 문장 93개<br><br>
+  <span style="color:#388bfd;">sjw0308-wq.github.io/gospel-chinese</span>
+</div>
+
+</body>
+</html>
